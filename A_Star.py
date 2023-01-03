@@ -11,7 +11,7 @@ import time
 import math
 from pygame import mixer
 import pygame, sys
-import moviepy.editor
+#import moviepy.editor
 
     
 class Node:
@@ -203,7 +203,7 @@ def draw(win, rows, width, nodes):
     draw_board(win, rows, width)
     pygame.display.update()
 
-
+####################SPLASH SCREEN###############################
 def show_splash_screen():
     # creating the display surface
     # Starting the mixer
@@ -260,6 +260,7 @@ def wait_for_key():
                 waiting=False
 # set the center of the rectangular object.
      #textRect.center = (X // 2, Y // 2)
+ #////////////////////////////////////////////////
 def main(win, width, rows):
     # List of nodes
     nodes = make_nodes(rows, width)
