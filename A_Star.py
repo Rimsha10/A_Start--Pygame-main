@@ -13,9 +13,14 @@ from tkinter import messagebox
 import math
 from pygame import mixer
 import pygame, sys
+<<<<<<< HEAD
 import moviepy.editor
 import cv2
 import splash_screen
+=======
+#import moviepy.editor
+
+>>>>>>> d4ae7f2daa9ad359468143db57f41750ba6c2edf
     
 class Node:
     def __init__(self, row, col, width, rows):
@@ -295,6 +300,7 @@ def wait_for_key():
                 waiting=False
 # set the center of the rectangular object.
      #textRect.center = (X // 2, Y // 2)
+ #////////////////////////////////////////////////
 def main(win, width, rows):
     # List of nodes
     nodes = make_nodes(rows, width)
