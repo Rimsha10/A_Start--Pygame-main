@@ -8,11 +8,14 @@
 
 import pygame
 import time
+from tkinter import *
+from tkinter import messagebox
 import math
 from pygame import mixer
 import pygame, sys
 import moviepy.editor
-
+import cv2
+import splash_screen
     
 class Node:
     def __init__(self, row, col, width, rows):
@@ -58,7 +61,7 @@ class Node:
 
     def update_neighbours(self, nodes):
         self.neighbours = []
-        # Get UP, DOWN, LEFT, RIGHT neighbours (Barries not allowed):
+        # Get UP, DOWN, LEFT, RIGHT neighbours (Barriers not allowed):
         if self.row != 0 and nodes[self.row - 1][self.col].get_state() != "Barrier": # UP
             self.neighbours.append(nodes[self.row - 1][self.col]) 
         if self.row < self.rows - 1 and nodes[self.row + 1][self.col].get_state() != "Barrier": # DOWN
@@ -76,12 +79,20 @@ class Node:
 
     def set_G(self):
         self.G = self.parent.G + self.distance_to(self.parent)
+        print('self.parent.G:',self.parent.G)
+        print('self.parent:',self.parent.get_coords())
+        print('distanceto():',self.distance_to(self.parent))
+
+        print('set_g:',self.G)
 
     def set_H(self, node):
         self.H = self.distance_to(node) 
+        print('set_H:',self.H)
+
 
     def set_F(self):
         self.F = self.G + self.H
+        print('set_F:',self.F)
 
     def distance_to(self, node):
         x2, y2 = node.get_coords()
@@ -92,24 +103,22 @@ class Node:
 
 
 def a_star(draw, start_node, end_node, nodes):
-    
     borders = []
     visited = []
     finished = False
-
     start_node.set_parent(start_node)
     start_node.restart_G()
     start_node.set_H(end_node)
     start_node.set_F()
     borders.append(start_node)
-
     iteration = 0
-
     while len(borders) != 0 and not finished:
         draw()
         iteration += 1
         borders.sort(key = lambda x: x.F, reverse=True)
+       # print('borders[]:',borders)
         node = borders.pop()
+       # print('node:',node)
         visited.append(node)
         node.set_state("Visited")
         print("Iteration:", iteration)
@@ -117,13 +126,12 @@ def a_star(draw, start_node, end_node, nodes):
         print("Node H:", node.H)
         print("Node F:", node.F)
         print("")
-
+        result=0
         if node == end_node:
             finished = True
-            print("Solution found")
+            result=1
             #draw backwards path
             draw_path(end_node, start_node)
-
         else:
             #neighbours = node.get_neighbours(nodes)
             node.update_neighbours(nodes)
@@ -135,12 +143,28 @@ def a_star(draw, start_node, end_node, nodes):
                     neighbour.set_F()
                     neighbour.set_state("Border")
                     borders.append(neighbour)
-
-        #time.sleep(0.05)
         draw()
+
     if not finished:
+        result=0
+        start_node.set_state("Start")
+        end_node.set_state("End")
+        pygame.time.wait(800)
+        draw()
         print("No solution found")
-    print("Exiting A star")
+        playmusic('lost.mp3')
+        messagebox.showwarning("Maze Wizard","No Solution found")
+
+    if result==1:
+         playmusic('success.mp3')
+         messagebox.showinfo("Maze Wizard","Solution found")
+       # playmusic('success.mp3')
+        #nodes = make_nodes(10, 600)
+   # if result==0:
+    #    pygame.time.wait(600)
+     #   playmusic('lost.mp3')
+      #  messagebox.showwarning("Maze Wizard","No Solution found")
+    #print("Exiting A star")
 
 
 def draw_path(end_node, start_node):
@@ -174,7 +198,8 @@ def restart_nodes_state(state, nodes):
     for row_of_nodes in nodes:
         for node in row_of_nodes:
             if node.get_state() == state:
-                node.set_state("Normal")
+                #or node.get_state()!='Start' and node.get_state()!='End':
+                node.set_state("Normal")                    
 
 
 def draw_board(win, rows, width):
@@ -203,48 +228,58 @@ def draw(win, rows, width, nodes):
     draw_board(win, rows, width)
     pygame.display.update()
 
+def playmusic(music):
+   mixer.init()  
+# Loading the song
+   mixer.music.load(music)
+# Setting the volume
+   mixer.music.set_volume(0.7)
+# Start playing the song
+   mixer.music.play()
+   pygame.time.wait(1500)
+   mixer.music.stop()
 
 def show_splash_screen():
-    # creating the display surface
-    # Starting the mixer
-     mixer.init()  
+   mixer.init()  
 # Loading the song
-     mixer.music.load("titlesong.mp3")
+   mixer.music.load("titlesong.mp3")
 # Setting the volume
-     mixer.music.set_volume(0.7)
+   mixer.music.set_volume(0.7)
 # Start playing the song
-     mixer.music.play()
-  
-     screen = pygame.display.set_mode((600, 600 ))
+   mixer.music.play()
+   video = cv2.VideoCapture("bg.mp4")
+   success, video_image = video.read()
+   fps = video.get(cv2.CAP_PROP_FPS)
+   window = pygame.display.set_mode(video_image.shape[1::-1])
+   clock = pygame.time.Clock()
+   run = success
+   while run:
+     clock.tick(16)
+     for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+            mixer.music.stop()
+        if event.type==pygame.KEYUP:
+            run=False
+            mixer.music.stop()
+
+     success, video_image = video.read()
+     if success:
+        
+        video_surf = pygame.image.frombuffer(
+            video_image.tobytes(), video_image.shape[1::-1], "BGR")
+     else:
+        run = False
+        mixer.music.stop()
      pygame.display.set_caption("Maze Wizard")
-     #screen.fill("MAZEIMG.jpg")
-     
-     bg_img = pygame.image.load('m2.png')
-     bg_img = pygame.transform.scale(bg_img,(600,600))
-     screen.blit(bg_img,(1,0))
-
-     font = pygame.font.Font("'freesansbold.ttf'", 40)
-     font2 = pygame.font.Font('freesansbold.ttf', 15)
-     para = font2.render('Press any key to continue', True, "#4EE8B5")
-     text = font.render('MAZE WIZARD', True,  "#4EE8B5",WHITE)
-     # create a rectangular object for the
-# text surface object
-     textRect = text.get_rect()
-     textRect1 = para.get_rect()
-
-# set the center of the rectangular object.
-     textRect.center = (600 // 2, 600 // 2)
-     textRect1.center = (600 // 2, 700 // 2)
-
-# create a text surface object,
-# on which text is drawn on it.
-     #header = text.render('Maze Wizard', True, START)
-     screen.blit(text, textRect)
-     screen.blit(para, textRect1)
-     print(textRect)
+     #pygame.display.set_palette(TITLE)
+     icon=pygame.image.load('icon.png')
+     pygame.display.set_icon(icon)
+     window.blit(video_surf, (0, 0))
+   #pygame.display.update()
      pygame.display.flip()
-     wait_for_key()
-     mixer.music.stop()
+     pygame.display.update()
+
 
 def wait_for_key():
     waiting=True
@@ -264,45 +299,39 @@ def main(win, width, rows):
     # List of nodes
     nodes = make_nodes(rows, width)
     running = True
+    nodes[0][0].set_state('Start')
+    start = nodes[0][0]
+    nodes[9][9].set_state('End')
+    end = nodes[9][9]
     while running:
-     #   clock = pygame.time.Clock()
-        # Flip everything to the display
-      #  pygame.display.flip()
-# Ensure program maintains a rate of 30 frames per second
-       # clock.tick(30)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             elif event.type == pygame.KEYDOWN: 
                 if event.key == pygame.K_ESCAPE: # ESCAPE --> RESTART BOARD
-                    nodes = make_nodes(rows, width)
+                     nodes = make_nodes(rows, width)
+                     nodes[0][0].set_state('Start')
+                     start = nodes[0][0]
+                   # nodes[0][0].set_state('Start')
+                   # nodes[9][9].set_state('End')
+                     nodes[9][9].set_state('End')
+                     end = nodes[9][9]
+                    
 
                 if event.key == pygame.K_RETURN: # ENTER --> START A* ALGORITHM
                     print("Enter pressed")
+                    
                     a_star(lambda: draw(win, rows, width, nodes), start, end, nodes)
-
-            elif pygame.key.get_mods() & pygame.KMOD_SHIFT: # SHIFT + click --> START POSITION
-                if pygame.mouse.get_pressed()[0]:
-                    x, y = get_pos(pygame.mouse.get_pos(), width, rows)
-                    state = "Start"
-                    restart_nodes_state(state, nodes)
-                    nodes[y][x].set_state(state)
-                    start = nodes[y][x]
-
-            elif pygame.key.get_mods() & pygame.KMOD_CTRL: # CTRL + click --> END POSITION
-                if pygame.mouse.get_pressed()[0]:
-                    x, y = get_pos(pygame.mouse.get_pos(), width, rows)
-                    state = "End"
-                    restart_nodes_state(state, nodes)
-                    nodes[y][x].set_state(state)
-                    end = nodes[y][x]
+                 
 
             elif pygame.mouse.get_pressed()[0]: # click  --> BARRIERS
-                x, y = get_pos(pygame.mouse.get_pos(), width, rows)
-                state = "Barrier"
-                nodes[y][x].set_state(state)
+               
+                    x, y = get_pos(pygame.mouse.get_pos(), width, rows)
+                    if nodes[y][x] != nodes[0][0] and nodes[y][x] != nodes[9][9]:
 
+                        state = "Barrier"
+                        nodes[y][x].set_state(state)
             elif pygame.mouse.get_pressed()[2]: # RIGHT click --> ERASER
                 x, y = get_pos(pygame.mouse.get_pos(), width, rows)
                 state = "Normal"
@@ -313,7 +342,7 @@ def main(win, width, rows):
                             nodes[y+i][x+j].set_state(state)
                         except:
                             nodes[y][x].set_state(state)
-
+       # print(pygame.mouse.get_focused())
         # DRAWING
         draw(win, rows, width, nodes)
         
@@ -321,16 +350,12 @@ def main(win, width, rows):
 
 #Initialize pygame
 pygame.init()
-#video = moviepy.editor.VideoFileClip("cv.mp4") #white margin
 
-
-#.aspect_ratio(600,600)
-# video.preview()
 
 # ENVIRONMENT
 WIDTH = 600
 HEIGHT = WIDTH
-ROWS = 40
+ROWS = 10
 # COLORS
 LINE_COLOR = (100, 100, 100)
 NORMAL = (250,  250, 240) 
@@ -343,6 +368,9 @@ PATH = (186, 205, 0)
 SPLASH= (8, 95, 99)
 SPLASHtxt=(250, 207, 90)
 WHITE=(255,255,255)
+TITLE=(255, 87, 87)
+sp=splash_screen.Sp_Screen()
+#sp.show_splash_screen()
 show_splash_screen()
 # PYGAME WINDOW
 WIN = pygame.display.set_mode(( WIDTH, HEIGHT))
