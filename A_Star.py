@@ -7,20 +7,13 @@
     # Escape -----------> restart board
 
 import pygame
-import time
 from tkinter import *
 from tkinter import messagebox
-import math
 from pygame import mixer
 import pygame, sys
-<<<<<<< HEAD
-import moviepy.editor
+#import moviepy.editor
 import cv2
 import splash_screen
-=======
-#import moviepy.editor
-
->>>>>>> d4ae7f2daa9ad359468143db57f41750ba6c2edf
     
 class Node:
     def __init__(self, row, col, width, rows):
@@ -32,8 +25,8 @@ class Node:
         self.color = self.get_color()
         self.width = width
         self.rows = rows
-        self.G = 99999
-        self.H = 99999
+        self.G = 0
+        self.H = 0
 
     def get_color(self):
         if self.state == "Normal":
@@ -84,11 +77,6 @@ class Node:
 
     def set_G(self):
         self.G = self.parent.G + self.distance_to(self.parent)
-        print('self.parent.G:',self.parent.G)
-        print('self.parent:',self.parent.get_coords())
-        print('distanceto():',self.distance_to(self.parent))
-
-        print('set_g:',self.G)
 
     def set_H(self, node):
         self.H = self.distance_to(node) 
@@ -116,16 +104,18 @@ def a_star(draw, start_node, end_node, nodes):
     start_node.set_H(end_node)
     start_node.set_F()
     borders.append(start_node)
+    
     iteration = 0
     while len(borders) != 0 and not finished:
         draw()
         iteration += 1
         borders.sort(key = lambda x: x.F, reverse=True)
-       # print('borders[]:',borders)
+        print('borders[]:',start_node)
         node = borders.pop()
-       # print('node:',node)
+        # print('node:',node)
         visited.append(node)
         node.set_state("Visited")
+        pygame.time.wait(1000)
         print("Iteration:", iteration)
         print("Node G:", node.G)
         print("Node H:", node.H)
@@ -244,63 +234,7 @@ def playmusic(music):
    pygame.time.wait(1500)
    mixer.music.stop()
 
-def show_splash_screen():
-   mixer.init()  
-# Loading the song
-   mixer.music.load("titlesong.mp3")
-# Setting the volume
-   mixer.music.set_volume(0.7)
-# Start playing the song
-   mixer.music.play()
-   video = cv2.VideoCapture("bg.mp4")
-   success, video_image = video.read()
-   fps = video.get(cv2.CAP_PROP_FPS)
-   window = pygame.display.set_mode(video_image.shape[1::-1])
-   clock = pygame.time.Clock()
-   run = success
-   while run:
-     clock.tick(16)
-     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-            mixer.music.stop()
-        if event.type==pygame.KEYUP:
-            run=False
-            mixer.music.stop()
 
-     success, video_image = video.read()
-     if success:
-        
-        video_surf = pygame.image.frombuffer(
-            video_image.tobytes(), video_image.shape[1::-1], "BGR")
-     else:
-        run = False
-        mixer.music.stop()
-     pygame.display.set_caption("Maze Wizard")
-     #pygame.display.set_palette(TITLE)
-     icon=pygame.image.load('icon.png')
-     pygame.display.set_icon(icon)
-     window.blit(video_surf, (0, 0))
-   #pygame.display.update()
-     pygame.display.flip()
-     pygame.display.update()
-
-
-def wait_for_key():
-    waiting=True
-    #running=True
-    clock=pygame.time.Clock()
-    while waiting:
-        clock.tick(60)
-        for event in pygame.event.get():
-            if event.type==pygame.QUIT:
-                waiting=False
-                #running=False
-            if event.type==pygame.KEYUP:
-                waiting=False
-# set the center of the rectangular object.
-     #textRect.center = (X // 2, Y // 2)
- #////////////////////////////////////////////////
 def main(win, width, rows):
     # List of nodes
     nodes = make_nodes(rows, width)
@@ -370,14 +304,14 @@ START = (250,0,0)
 END = (251, 255, 130)
 BORDER = (87,135,90)
 VISITED = (110,175,85)
-PATH = (186, 205, 0)
+PATH = (186, 205, 0)  
 SPLASH= (8, 95, 99)
 SPLASHtxt=(250, 207, 90)
 WHITE=(255,255,255)
 TITLE=(255, 87, 87)
 sp=splash_screen.Sp_Screen()
-#sp.show_splash_screen()
-show_splash_screen()
+sp.show_splash_screen()
+#show_splash_screen()
 # PYGAME WINDOW
 WIN = pygame.display.set_mode(( WIDTH, HEIGHT))
 pygame.display.set_caption("Maze Wizard")
