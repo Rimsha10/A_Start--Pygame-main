@@ -1,10 +1,7 @@
-
 import pygame
-import time
 import math
 from pygame import mixer
 import pygame, sys
-import moviepy.editor
 import cv2
 class Sp_Screen:
  def show_splash_screen(self):
@@ -15,11 +12,7 @@ class Sp_Screen:
    mixer.music.set_volume(0.7)
 # Start playing the song
    mixer.music.play()
-# create a text surface object,
-# on which text is drawn on it.
-     #header = text.render('Maze Wizard', True, START)
-  
-   video = cv2.VideoCapture("vidbg.mp4")
+   video = cv2.VideoCapture("bg.mp4")
    success, video_image = video.read()
    fps = video.get(cv2.CAP_PROP_FPS)
    window = pygame.display.set_mode(video_image.shape[1::-1])
@@ -32,7 +25,9 @@ class Sp_Screen:
             run = False
             mixer.music.stop()
         if event.type==pygame.KEYUP:
-                run=False
+            run=False
+            mixer.music.stop()
+
      success, video_image = video.read()
      if success:
         
@@ -41,22 +36,12 @@ class Sp_Screen:
      else:
         run = False
         mixer.music.stop()
-
-     window.blit(video_surf, (0, 0))
      pygame.display.set_caption("Maze Wizard")
-
+     #pygame.display.set_palette(TITLE)
+     icon=pygame.image.load('icon.png')
+     pygame.display.set_icon(icon)
+     window.blit(video_surf, (0, 0))
    #pygame.display.update()
      pygame.display.flip()
+     pygame.display.update()
 
- def wait_for_key(self):
-    waiting=True
-    #running=True
-    clock=pygame.time.Clock()
-    while waiting:
-        clock.tick(60)
-        for event in pygame.event.get():
-            if event.type==pygame.QUIT:
-                waiting=False
-                #running=False
-            if event.type==pygame.KEYUP:
-                waiting=False
